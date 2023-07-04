@@ -2,8 +2,6 @@ import * as THREE from 'three';
 import React, { useEffect, useRef } from 'react';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import {FBXLoader} from "three/examples/jsm/loaders/FBXLoader";
-// import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-// import model from "./model"
 
 import Ground from './components/Ground';
 
@@ -24,8 +22,7 @@ function App() {
     let mixer = new THREE.AnimationMixer();
     const animationsMap = new Map();
     modelloader.setPath("src/assets/models/");
-    modelloader.load('PlayerTPose.fbx',(fbx)=>{
-      console.log("MODEL",fbx);
+    modelloader.load('Player.fbx',(fbx)=>{
       fbx.scale.multiplyScalar(0.1);
       fbx.traverse(c=>{
         c.castShadow = true;
@@ -35,18 +32,21 @@ function App() {
       const anim = new FBXLoader();
       anim.setPath('src/assets/models/');
       anim.load("Walking.fbx",(anim)=>{
-        console.log("WALK",anim);
         const walking = mixer.clipAction(anim.animations[0]);
-        animationsMap.set("walking",walking);
-        // idle.play();
+        animationsMap.set("walk",walking);
       });
-      const anim2 = new FBXLoader();
-      anim2.setPath("src/assets/models/");
-      anim2.load("Jumping.fbx",(anim)=>{
-        console.log("JUMP",anim);
+      anim.load("Jumping.fbx",(anim)=>{
         const jump = mixer.clipAction(anim.animations[0]);
         animationsMap.set("jump",jump);
-        // jump.play();
+      });
+      anim.load("Idle.fbx",(anim)=>{
+        const idle = mixer.clipAction(anim.animations[0]);
+        animationsMap.set("idle",idle);
+        idle.play();
+      });
+      anim.load("Sprint.fbx",(anim)=>{
+        const sprint = mixer.clipAction(anim.animations[0]);
+        animationsMap.set("sprint",sprint);
       })
 
         scene.add(fbx);
@@ -102,17 +102,21 @@ function App() {
           anime.stop();
         },1300)
       }
+      if(e.code==="ArrowUp"){
+        const anime = animationsMap.get("walk");
+        const idle = animationsMap.get("idle");
+        idle.stop();
+        anime.reset();
+        anime.play();
+        setTimeout(()=>{
+          anime.stop();
+        },1000)
+
+      }
     })
     
     const loader = new THREE.CubeTextureLoader();
     const texture = loader.load([
-      // 'src/assets/images/posx.jpg',
-      // 'src/assets/images/negx.jpg',
-      // 'src/assets/images/posy.jpg',
-      // 'src/assets/images/negy.jpg',
-      // 'src/assets/images/posz.jpg',
-      // 'src/assets/images/negz.jpg',
-      // "src/assets/images/dreamlike_sky.jpg"
       'src/assets/images/xpos.png',
       'src/assets/images/xneg.png',
       'src/assets/images/ypos.png',
