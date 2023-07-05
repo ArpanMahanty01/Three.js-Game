@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import {FBXLoader} from "three/examples/jsm/loaders/FBXLoader";
 
 import Ground from './components/Ground';
+import { CharacterControls } from './CharachterController';
 
 function App() {
   const sceneRef = useRef();
@@ -12,13 +13,16 @@ function App() {
     const scene = new THREE.Scene();
 
     //camera
-    const camera = new THREE.PerspectiveCamera(50,window.innerWidth/ window.innerHeight, 0.1, 1000);  //fov, aspect, near, far
+    const camera = new THREE.PerspectiveCamera(45,window.innerWidth/ window.innerHeight, 0.1, 1000);  //fov, aspect, near, far
+    camera.position.y = 50;
+    camera.position.z = 5;
+    camera.position.x = 0;
+    camera.rotateY(Math.PI);
     scene.add(camera);
-    camera.position.set( 0, 20, 50 );
 
     //model
+    let charachterControls;
     const modelloader = new FBXLoader();
-
     let mixer = new THREE.AnimationMixer();
     const animationsMap = new Map();
     modelloader.setPath("src/assets/models/");
@@ -31,47 +35,43 @@ function App() {
       mixer = new THREE.AnimationMixer(fbx);
       const anim = new FBXLoader();
       anim.setPath('src/assets/models/');
-      anim.load("Walking.fbx",(anim)=>{
+      anim.load("Walking(1).fbx",(anim)=>{
         const walking = mixer.clipAction(anim.animations[0]);
-        animationsMap.set("walk",walking);
+        animationsMap.set("Walk",walking);
       });
       anim.load("Jumping.fbx",(anim)=>{
         const jump = mixer.clipAction(anim.animations[0]);
-        animationsMap.set("jump",jump);
+        animationsMap.set("Jump",jump);
       });
       anim.load("Idle.fbx",(anim)=>{
         const idle = mixer.clipAction(anim.animations[0]);
-        animationsMap.set("idle",idle);
-        idle.play();
+        animationsMap.set("Idle",idle);
       });
-      anim.load("Sprint.fbx",(anim)=>{
+      anim.load("Fast Run.fbx",(anim)=>{
         const sprint = mixer.clipAction(anim.animations[0]);
-        animationsMap.set("sprint",sprint);
+        animationsMap.set("Run",sprint);
       })
-
+      charachterControls = new CharacterControls(fbx,mixer,animationsMap,controls,camera,"Idle");
         scene.add(fbx);
     }); 
 
     //lights
-    let light = new THREE.DirectionalLight(0xFFFFFF);
-    light.position.set(100,100,100);
-    light.target.position.set(0,0,0);
-    light.castShadow = true;
-    light.shadow.bias = -0.001;
-    light.shadow.mapSize.width = 2048;
-    light.shadow.mapSize.height = 2048;
-    light.shadow.camera.near = 0.1;
-    light.shadow.camera.far = 500.0;
-    light.shadow.camera.near = 0.5;
-    light.shadow.camera.far = 500.0;
-    light.shadow.camera.left = 100;
-    light.shadow.camera.right = -100;
-    light.shadow.camera.top = 100;
-    light.shadow.camera.bottom = -100;
-    scene.add(light);
+    const setUpLights = ()=>{
+      scene.add(new THREE.AmbientLight(0xffffff, 0.7))
 
-    light = new THREE.AmbientLight(0x101010);
-    scene.add(light);
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1)
+      dirLight.position.set(- 60, 100, - 10);
+      dirLight.castShadow = true;
+      dirLight.shadow.camera.top = 50;
+      dirLight.shadow.camera.bottom = - 50;
+      dirLight.shadow.camera.left = - 50;
+      dirLight.shadow.camera.right = 50;
+      dirLight.shadow.camera.near = 0.1;
+      dirLight.shadow.camera.far = 200;
+      dirLight.shadow.mapSize.width = 4096;
+      dirLight.shadow.mapSize.height = 4096;
+      scene.add(dirLight);
+    }
 
     //components
     const ground = Ground();
@@ -93,27 +93,18 @@ function App() {
 
     
     //charachter control
-    document.addEventListener("keydown",(e)=>{
-      if(e.code==="Space"){
-        const anime = animationsMap.get('jump');
-        anime.reset();
-        anime.play();
-        setTimeout(()=>{
-          anime.stop();
-        },1300)
+    const keysPressed = {};
+    document.addEventListener("keydown",(event)=>{
+      if(event.shiftKey && charachterControls){
+        charachterControls.switchRunToggle();
+      } else {
+        keysPressed[event.key.toLowerCase()] = true;
       }
-      if(e.code==="ArrowUp"){
-        const anime = animationsMap.get("walk");
-        const idle = animationsMap.get("idle");
-        idle.stop();
-        anime.reset();
-        anime.play();
-        setTimeout(()=>{
-          anime.stop();
-        },1000)
+    },false);
+    document.addEventListener('keyup', (event) => {
+      (keysPressed)[event.key.toLowerCase()] = false
+  }, false);
 
-      }
-    })
     
     const loader = new THREE.CubeTextureLoader();
     const texture = loader.load([
@@ -129,13 +120,16 @@ function App() {
 const clock = new THREE.Clock;
     //animate
     const animate = ()=>{
+      let mixerUpdateDelta = clock.getDelta();
+      if (charachterControls) {
+        charachterControls.update(mixerUpdateDelta, keysPressed);
+    }
       controls.enableZoom = true;
       controls.update();
       renderer.render(scene,camera);
       requestAnimationFrame(animate);
-      mixer.update(clock.getDelta());
     }
-
+    setUpLights();
     animate();
     
 

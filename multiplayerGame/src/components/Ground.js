@@ -9,7 +9,7 @@ const Ground = ()=>{
     const heightMap = textureLoader.load("src/assets/textures/ground/Stylized_Stone_Floor_005_height.png");
     const ambientOcclusion = textureLoader.load("src/assets/textures/ground/Stylized_Stone_Floor_005_ambientOcclusion.jpg");
 
-    const groundGeometry = new THREE.PlaneGeometry(100,100,512,512);
+    const groundGeometry = new THREE.PlaneGeometry(500,500,512,512);
     const groundMaterial = new THREE.MeshStandardMaterial({
         map: baseColor,
         normalMap:normalMap,
