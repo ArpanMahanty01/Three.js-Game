@@ -43,6 +43,10 @@ function App() {
         const jump = mixer.clipAction(anim.animations[0]);
         animationsMap.set("Jump",jump);
       });
+      anim.load('Flying.fbx',(anim)=>{
+        const fly = mixer.clipAction(anim.animations[0]);
+        animationsMap.set("Fly",fly);
+      })
       anim.load("Idle.fbx",(anim)=>{
         const idle = mixer.clipAction(anim.animations[0]);
         animationsMap.set("Idle",idle);
@@ -72,6 +76,7 @@ function App() {
       dirLight.shadow.mapSize.height = 4096;
       scene.add(dirLight);
     }
+    scene.fog = new THREE.FogExp2( 0xefd1b5, 0.0025 );
 
     //components
     const ground = Ground();
@@ -91,13 +96,32 @@ function App() {
     controls.target.set(0,20,0);
     controls.update();
 
+    //music
+    const listener = new THREE.AudioListener();
+    camera.add( listener );
+
+    const sound = new THREE.Audio( listener );
+
+// load a sound and set it as the Audio object's buffer
+const audioLoader = new THREE.AudioLoader();
+audioLoader.load( 'src/assets/music/The_Only_Thing_They_Fear_Is_You_DOOM_Eternal_OST-646237.mp3', function( buffer ) {
+	sound.setBuffer( buffer );
+	sound.setLoop( true );
+	sound.setVolume( 0.5 );
+	// sound.play();
+});
+
     
     //charachter control
     const keysPressed = {};
     document.addEventListener("keydown",(event)=>{
+      console.log(event.key)
       if(event.shiftKey && charachterControls){
         charachterControls.switchRunToggle();
-      } else {
+      } else if(event.key == "f" && charachterControls){
+        charachterControls.switchFlyToggle();
+      }
+       else {
         keysPressed[event.key.toLowerCase()] = true;
       }
     },false);
