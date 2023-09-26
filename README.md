@@ -2,6 +2,8 @@
 
 ## Description
 
+![](https://github.com/ArpanMahanty01/Three.js-Game/blob/master/multiplayerGame/game.png)
+
 This project is an ongoing game development endeavor that combines the power of Three.js and React. The primary goal of this project is to create an engaging and interactive 3D game experience. Notably, this project does not utilize React Three Fiber, opting for a custom integration of Three.js into a React application.
 
 ### Current Status
