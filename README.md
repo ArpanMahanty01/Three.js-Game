@@ -44,6 +44,18 @@ npm run dev
 4. **Open the Game in Your Browser**:
 Open your web browser and navigate to `http://localhost:5173` to see the game in action.
 
+## Landmass 
+generated basic landmass using perlin noise
+
+![landmass](landmass.png)
+
+# installation
+1. clone this repository
+2. run this application using vite
+```sh
+npx vite .
+```
+
 ## Technologies Used
 
 - [React](https://reactjs.org/): A JavaScript library for building user interfaces.
